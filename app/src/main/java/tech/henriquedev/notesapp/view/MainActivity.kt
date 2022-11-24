@@ -1,7 +1,11 @@
 package tech.henriquedev.notesapp.view
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,5 +36,25 @@ class MainActivity : AppCompatActivity() {
             // update UI
             noteAdapter.setNote(notes)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_add_note -> {
+                val intent = Intent(this, NoteAddActivity::class.java)
+                startActivity(intent)
+            }
+            R.id.menu_delete_all_notes -> {
+                Toast
+                    .makeText(applicationContext, "Delete all notes", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+        return true
     }
 }
