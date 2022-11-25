@@ -1,23 +1,27 @@
 package tech.henriquedev.notesapp.view
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import tech.henriquedev.notesapp.NoteApplication
 import tech.henriquedev.notesapp.R
 import tech.henriquedev.notesapp.adapter.NoteAdapter
+import tech.henriquedev.notesapp.model.Note
 import tech.henriquedev.notesapp.viewmodel.NoteViewModel
 import tech.henriquedev.notesapp.viewmodel.NoteViewModelFactory
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var noteViewModel: NoteViewModel
+    lateinit var addActivityResultLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +32,9 @@ class MainActivity : AppCompatActivity() {
         val noteAdapter = NoteAdapter()
         recyclerView.adapter = noteAdapter
 
+        // register activity for result
+        registerActivityResultLauncher()
+
         val viewModelFactory = NoteViewModelFactory((application as NoteApplication).repository)
 
         noteViewModel = ViewModelProvider(this, viewModelFactory).get(NoteViewModel::class.java)
@@ -35,6 +42,21 @@ class MainActivity : AppCompatActivity() {
         noteViewModel.myAllNotes.observe(this) { notes ->
             // update UI
             noteAdapter.setNote(notes)
+        }
+    }
+
+    fun registerActivityResultLauncher() {
+        addActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { resultAddNote ->
+            val resultCode = resultAddNote.resultCode
+            val data = resultAddNote.data
+
+            if (resultCode == RESULT_OK && data != null) {
+                val noteTitle: String = data.getStringExtra("title").toString()
+                val noteDescription: String = data.getStringExtra("description").toString()
+
+                val note = Note(noteTitle, noteDescription)
+                noteViewModel.insert(note)
+            }
         }
     }
 
@@ -47,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         when (item.itemId) {
             R.id.menu_add_note -> {
                 val intent = Intent(this, NoteAddActivity::class.java)
-                startActivity(intent)
+                addActivityResultLauncher.launch(intent)
             }
             R.id.menu_delete_all_notes -> {
                 Toast

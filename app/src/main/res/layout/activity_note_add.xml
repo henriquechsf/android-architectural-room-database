@@ -10,7 +10,7 @@
     android:layout_margin="16dp">
 
     <EditText
-        android:id="@+id/editTextTextPersonName"
+        android:id="@+id/editTextTitle"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:hint="Enter Note Title"
