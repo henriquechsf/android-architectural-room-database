@@ -1,5 +1,6 @@
 package tech.henriquedev.notesapp.view
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -7,8 +8,10 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import tech.henriquedev.notesapp.NoteApplication
@@ -43,6 +46,24 @@ class MainActivity : AppCompatActivity() {
             // update UI
             noteAdapter.setNote(notes)
         }
+
+        ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder,
+            ): Boolean {
+                TODO("Not yet implemented")
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                noteViewModel.delete(noteAdapter.getNote(viewHolder.adapterPosition))
+            }
+
+        }).attachToRecyclerView(recyclerView)
     }
 
     fun registerActivityResultLauncher() {
@@ -71,12 +92,19 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(this, NoteAddActivity::class.java)
                 addActivityResultLauncher.launch(intent)
             }
-            R.id.menu_delete_all_notes -> {
-                Toast
-                    .makeText(applicationContext, "Delete all notes", Toast.LENGTH_SHORT)
-                    .show()
-            }
+            R.id.menu_delete_all_notes -> showDialogMessage()
         }
         return true
+    }
+
+    private fun showDialogMessage() {
+        val dialogMessage = AlertDialog.Builder(this)
+            .setTitle("Delete All Notes")
+            .setMessage("If click yes all notes will delete, if you want delete a specific note, please swipe left or right")
+            .setNegativeButton("No", DialogInterface.OnClickListener { dialog, _ -> dialog.cancel() })
+            .setPositiveButton("Yes", DialogInterface.OnClickListener { _, _ -> noteViewModel.deleteAllNotes() })
+            .create()
+            .show()
+
     }
 }
